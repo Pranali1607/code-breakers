@@ -334,3 +334,269 @@ button:active {
 h1, h2 {
   color: white;
 }
+let chartInstance = null;
+let spendingChart = null;
+let usageChart = null;
+
+// ================= INTRO + PAGE LOAD =================
+window.addEventListener("load", () => {
+  document.body.classList.add("loaded");
+
+  setTimeout(() => {
+    const intro = document.getElementById("intro");
+    if (intro) intro.classList.add("fade-out");
+  }, 3000);
+});
+
+// ================= NAVBAR =================
+function toggleMenu() {
+  const menu = document.getElementById("dropdown");
+  menu.style.display = menu.style.display === "block" ? "none" : "block";
+}
+
+// close dropdown
+document.addEventListener("click", function (e) {
+  const menu = document.getElementById("dropdown");
+  const icon = document.querySelector(".profile-icon");
+
+  if (!menu || !icon) return;
+
+  if (!menu.contains(e.target) && !icon.contains(e.target)) {
+    menu.style.display = "none";
+  }
+});
+
+function goToProfile() {
+  alert("Profile page coming soon!");
+}
+
+function profileSettings() {
+  alert("Settings coming soon!");
+}
+
+function logout() {
+  alert("Logged out!");
+}
+
+// ================= NAME INPUT =================
+function handlePresetChange() {
+  const val = document.getElementById("presetName").value;
+  document.getElementById("customName").style.display =
+    val === "custom" ? "block" : "none";
+}
+
+// ================= STORAGE =================
+function getData() {
+  return JSON.parse(localStorage.getItem("subs")) || [];
+}
+
+function saveData(data) {
+  localStorage.setItem("subs", JSON.stringify(data));
+}
+
+// ================= ADD =================
+function addSubscription() {
+  const preset = document.getElementById("presetName").value;
+  const custom = document.getElementById("customName").value;
+  const name = preset === "custom" ? custom : preset;
+
+  const cost = document.getElementById("cost").value;
+  const date = document.getElementById("date").value;
+
+  if (!name || !cost || !date) {
+    return alert("Please fill all fields!");
+  }
+
+  const sub = {
+    name,
+    cost: parseFloat(cost),
+    renewalDate: date,
+    category: document.getElementById("category").value,
+    billingCycle: document.getElementById("billing").value,
+    paymentMethod: document.getElementById("payment").value,
+    ratings: []
+  };
+
+  let data = getData();
+  data.push(sub);
+  saveData(data);
+
+  document.getElementById("cost").value = "";
+  document.getElementById("date").value = "";
+  document.getElementById("customName").value = "";
+
+  loadData();
+}
+
+// ================= LOAD =================
+function loadData() {
+  const dataList = getData();
+  const list = document.getElementById("list");
+  list.innerHTML = "";
+
+  let total = 0, flagged = 0;
+  let renewalsHTML = "";
+  let today = new Date();
+
+  dataList.forEach((data, index) => {
+    let monthly = data.cost;
+    if (data.billingCycle === "half-yearly") monthly /= 6;
+    if (data.billingCycle === "yearly") monthly /= 12;
+
+    total += monthly;
+
+    let cancel = false;
+    if (data.ratings.length >= 3) {
+      cancel = data.ratings.slice(-3)
+        .every(r => r === "Never used");
+    }
+
+    if (cancel) flagged += monthly;
+
+    let diff = (new Date(data.renewalDate) - today)/(1000*60*60*24);
+    if (diff <= 30 && diff >= 0) {
+      renewalsHTML += `
+        <p>⚠️ ${data.name} - ₹${data.cost} (in ${Math.round(diff)} days)</p>`;
+    }
+
+    list.innerHTML += `
+      <div class="card">
+        <h3>${data.name} - ₹${data.cost}</h3>
+        <p>${data.billingCycle} | ${data.paymentMethod}</p>
+
+        <select onchange="rate(${index}, this.value)">
+          <option>Rate Usage</option>
+          <option>Used frequently</option>
+          <option>Used occasionally</option>
+          <option>Never used</option>
+        </select>
+
+        ${cancel ? '<p class="warning">Cancel Recommended 🚨</p>' : ''}
+      </div>`;
+  });
+
+  document.getElementById("total").innerText =
+    "Total Monthly Spend: ₹" + total.toFixed(2);
+
+  document.getElementById("renewals").innerHTML =
+    renewalsHTML || "No upcoming renewals";
+
+  let yearly = flagged * 12;
+  let future = Math.round(yearly * Math.pow(1.08, 10));
+
+  document.getElementById("savings").innerText =
+    `Save ₹${yearly.toFixed(0)}/year → ₹${future} in 10 years`;
+
+  renderChart(dataList);
+  renderBubbleCharts(dataList);
+}
+
+// ================= BAR GRAPH =================
+function renderChart(dataList) {
+  const ctx = document.getElementById("myChart");
+
+  let processed = dataList.map(d => {
+    let monthly = d.cost;
+    if (d.billingCycle === "half-yearly") monthly /= 6;
+    if (d.billingCycle === "yearly") monthly /= 12;
+
+    let score = 1;
+    if (d.ratings.length) {
+      let last = d.ratings[d.ratings.length - 1];
+      if (last === "Used frequently") score = 3;
+      else if (last === "Used occasionally") score = 2;
+    }
+
+    return { name: d.name, cost: monthly, usage: score };
+  });
+
+  processed.sort((a, b) => b.usage - a.usage || b.cost - a.cost);
+
+  let labels = processed.map(d => d.name);
+  let spend = processed.map(d => d.cost);
+  let usage = processed.map(d => d.usage);
+
+  if (chartInstance) chartInstance.destroy();
+
+  chartInstance = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels,
+      datasets: [
+        { label: "₹ Monthly Cost", data: spend },
+        { label: "Usage Score (3 = High)", data: usage }
+      ]
+    }
+  });
+}
+
+// ================= BUBBLE CHARTS =================
+function renderBubbleCharts(dataList) {
+
+  const spendingCtx = document.getElementById("spendingBubble");
+  const usageCtx = document.getElementById("usageBubble");
+
+  if (!spendingCtx || !usageCtx) return;
+
+  let spendingData = [];
+  let usageData = [];
+
+  dataList.forEach((d, i) => {
+    let monthly = d.cost;
+    if (d.billingCycle === "half-yearly") monthly /= 6;
+    if (d.billingCycle === "yearly") monthly /= 12;
+
+    let score = 1;
+    if (d.ratings.length) {
+      let last = d.ratings[d.ratings.length - 1];
+      if (last === "Used frequently") score = 3;
+      else if (last === "Used occasionally") score = 2;
+    }
+
+    spendingData.push({
+      x: i + 1,
+      y: monthly,
+      r: Math.max(5, monthly / 5)
+    });
+
+    usageData.push({
+      x: i + 1,
+      y: score,
+      r: score * 6
+    });
+  });
+
+  if (spendingChart) spendingChart.destroy();
+  if (usageChart) usageChart.destroy();
+
+  spendingChart = new Chart(spendingCtx, {
+    type: "bubble",
+    data: {
+      datasets: [{
+        label: "💰 Money Spent",
+        data: spendingData
+      }]
+    }
+  });
+
+  usageChart = new Chart(usageCtx, {
+    type: "bubble",
+    data: {
+      datasets: [{
+        label: "📊 Usage Level",
+        data: usageData
+      }]
+    }
+  });
+}
+
+// ================= RATE =================
+function rate(index, value) {
+  let data = getData();
+  data[index].ratings.push(value);
+  saveData(data);
+  loadData();
+}
+
+// ================= INIT =================
+loadData();
