@@ -3,88 +3,123 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SubShield | Student Hackathon Edition</title>
+    <title>SubShield | Elite Command Center</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <div id="intro"><div class="intro-text">SubShield.</div></div>
+    <div id="intro">
+        <div class="intro-content">
+            <h1 class="glitch-logo" data-text="SUBSHIELD">SUBSHIELD</h1>
+            <div class="loader-bar"><div class="loader-progress"></div></div>
+            <p class="boot-text">DECRYPTING FINANCIAL SHIELDS...</p>
+        </div>
+    </div>
 
     <nav class="navbar">
-        <div class="logo">✦ SubShield</div>
+        <div class="nav-left-space"></div> 
+        <div class="logo centered-logo">✦ SUBSHIELD ✦</div>
         <div class="nav-right">
             <div class="profile-circle" onclick="toggleMenu(event)">
-                <img src="https://i.pravatar.cc/150?u=student" alt="Me">
+                <svg class="user-icon" viewBox="0 0 24 24">
+                    <path d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z" />
+                </svg>
             </div>
             <div id="dropdown" class="dropdown-content">
                 <a href="#">My Journey</a>
-                <a href="#">Focus Mode</a>
                 <a href="#" onclick="localStorage.clear(); location.reload();" style="color: #ff5e5e;">Reset All Data</a>
             </div>
         </div>
     </nav>
 
-    <div class="workspace">
-        <div id="smart-insight">"Welcome back! Ready to save some Vada Pav money?"</div>
+    <div class="workspace full-scale">
+        <div id="smart-insight">"Welcome back! Your high-performance financial command center is ready."</div>
 
-        <div class="sticky-note-form">
-            <h3>New Registry ✏️</h3>
-            <div class="input-group">
-                <select id="presetName" onchange="handlePresetChange()">
-                    <option value="">Service Name</option>
-                    <option value="Netflix">Netflix</option>
-                    <option value="Spotify">Spotify</option>
-                    <option value="ChatGPT">ChatGPT Plus</option>
-                    <option value="custom"> + Custom</option>
-                </select>
-                <input type="text" id="customName" placeholder="Name..." style="display:none;">
-                <input type="number" id="cost" placeholder="Price ₹">
-                <input type="date" id="date">
-                <select id="billing">
-                    <option value="monthly">Monthly</option>
-                    <option value="yearly">Yearly</option>
-                </select>
-                <select id="category">
-                    <option value="Entertainment">Chill 🍿</option>
-                    <option value="Productivity">Study 📚</option>
-                    <option value="Health">Gym 🏋️</option>
-                </select>
-                <div class="trial-toggle">
-                    <input type="checkbox" id="isTrial"> <label for="isTrial">Free Trial? 🎁</label>
+        <div class="unique-registry">
+            <h3 class="registry-title">Secure New Registry ✏️</h3>
+            <div class="input-grid">
+                <div class="field-box">
+                    <label>Service Name</label>
+                    <select id="presetName" onchange="handlePresetChange()">
+                        <option value="">Select Service...</option>
+                        <option value="Netflix">Netflix</option>
+                        <option value="Spotify">Spotify</option>
+                        <option value="ChatGPT">ChatGPT Plus</option>
+                        <option value="custom"> + Custom</option>
+                    </select>
+                    <input type="text" id="customName" placeholder="Enter Name" style="display:none; margin-top:10px;">
                 </div>
-                <button onclick="addSubscription()" class="btn-add">Add to Registry ➜</button>
+                <div class="field-box">
+                    <label>Cost (₹)</label>
+                    <input type="number" id="cost" placeholder="0.00">
+                </div>
+                <div class="field-box">
+                    <label>Renewal Date</label>
+                    <input type="date" id="date">
+                </div>
+                <div class="field-box">
+                    <label>Billing Cycle</label>
+                    <select id="billing">
+                        <option value="monthly">Monthly</option>
+                        <option value="yearly">Yearly</option>
+                    </select>
+                </div>
+                <div class="field-box">
+                    <label>Vibe/Category</label>
+                    <select id="category">
+                        <option value="Entertainment">Chill 🍿</option>
+                        <option value="Productivity">Study 📚</option>
+                        <option value="Health">Gym 🏋️</option>
+                    </select>
+                </div>
+                <div class="field-box">
+                    <label>Trial Mode</label>
+                    <div class="trial-toggle-box">
+                        <input type="checkbox" id="isTrial"> <span>Free Trial 🎁</span>
+                    </div>
+                </div>
+                <button onclick="addSubscription()" class="btn-registry-gradient">
+                    AUTHORIZE SUBSCRIPTION ➜
+                </button>
             </div>
         </div>
 
-        <div id="lifestyle-alert">Calculating impact...</div>
-
         <div class="stats-grid">
-            <div class="neo-box pink-glow">
-                <p>Monthly Burn</p>
-                <h2 id="totalVal">₹0.00</h2>
-            </div>
-            <div class="neo-box cyan-glow">
-                <p>Future Wealth (10y)</p>
-                <h2 id="saveVal">₹0.00</h2>
-            </div>
+            <div class="neo-box pink-glow"><p>Monthly Burn</p><h2 id="totalVal">₹0.00</h2></div>
+            <div class="neo-box cyan-glow"><p>Future Wealth (10y)</p><h2 id="saveVal">₹0.00</h2></div>
             <div class="neo-box yellow-glow">
-                <p>Renewals</p>
-                <div class="filter-row">
-                    <button onclick="loadData(7)" class="f-btn">7d</button>
-                    <button onclick="loadData(30)" class="f-btn">30d</button>
-                </div>
-                <div id="renewals" class="renewal-scroll">Clear!</div>
+                <p>Status</p>
+                <div id="renewals" style="margin-top:10px; font-weight:bold; color:#ffe600;">System Active</div>
             </div>
         </div>
 
         <div class="visuals-row">
-            <div class="chart-wrapper"><h4>Spend Mix 🍕</h4><canvas id="categoryChart"></canvas></div>
-            <div class="chart-wrapper"><h4>Worth it? 📈</h4><canvas id="efficiencyChart"></canvas></div>
+            <div class="chart-wrapper">
+                <h4>Spend Mix 🍕</h4>
+                <div class="canvas-box"><canvas id="categoryChart"></canvas></div>
+            </div>
+            <div class="chart-wrapper">
+                <h4>Utility Score 📈</h4>
+                <div class="canvas-box"><canvas id="efficiencyChart"></canvas></div>
+            </div>
+            <div class="chart-wrapper">
+                <h4 style="color: #ff00c8;">Sub-Survivor 🕹️</h4>
+                <div class="game-canvas-wrapper">
+                    <canvas id="gameCanvas"></canvas>
+                    <div id="gameOverlay">
+                        <button onclick="startSubGame()" class="f-btn">START MISSION</button>
+                    </div>
+                </div>
+                <div style="display:flex; justify-content:space-between; width:100%; margin-top:10px;">
+                    <span id="gameScore">Score: 0</span>
+                </div>
+            </div>
         </div>
 
-        <h3 class="title-font">My Registry 📁</h3>
+        <h3 class="title-font">Subscription Registry 📁</h3>
         <div id="list" class="registry-container"></div>
     </div>
     <script src="script.js"></script>
+    <div id="popup" class="popup"></div>
 </body>
 </html>
