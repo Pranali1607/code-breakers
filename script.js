@@ -1,364 +1,308 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&family=Orbitron:wght@700;900&family=Caveat:wght@700&display=swap');
+let catChart = null, effChart = null;
 
-* {
-    box-sizing: border-box;
-    transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+const getData = () => JSON.parse(localStorage.getItem("subs")) || [];
+const saveData = (data) => localStorage.setItem("subs", JSON.stringify(data));
+
+// --- INITIALIZE ---
+window.addEventListener("load", () => {
+    setTimeout(() => {
+        const intro = document.getElementById("intro");
+        intro.classList.add("intro-fade-out");
+        setTimeout(() => intro.style.display = "none", 800);
+    }, 2000);
+
+    loadData();
+    initGame();
+});
+
+// --- POPUP FUNCTION ---
+function showPopup(message) {
+    const popup = document.getElementById("popup");
+    if (!popup) return;
+
+    popup.innerText = message;
+    popup.classList.add("show");
+
+    setTimeout(() => {
+        popup.classList.remove("show");
+    }, 4000);
 }
 
-body {
-    margin: 0;
-    padding: 20px;
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    background: #0a0b10;
-    color: white;
-    background: linear-gradient(rgba(10, 11, 16, 0.95), rgba(48, 43, 99, 0.9));
-    background-size: cover;
-    background-attachment: fixed;
-    overflow-x: hidden;
+// --- PROFILE DROPDOWN ---
+function toggleMenu(event) {
+    event.stopPropagation();
+    document.getElementById("dropdown").classList.toggle("show");
 }
 
-/* --- GLITCH INTRO --- */
-#intro {
-    position: fixed;
-    inset: 0;
-    background: #0a0b10;
-    z-index: 999999;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-}
-
-.glitch-logo {
-    font-family: 'Orbitron', sans-serif;
-    font-size: 75px;
-    font-weight: 900;
-    color: #00f2ff;
-    letter-spacing: 15px;
-    position: relative;
-}
-
-.loader-bar {
-    width: 300px;
-    height: 6px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 10px;
-    margin-top: 30px;
-    overflow: hidden;
-}
-
-.loader-progress {
-    width: 0%;
-    height: 100%;
-    background: #ff00c8;
-    animation: load 1.5s forwards;
-}
-
-@keyframes load {
-    to {
-        width: 100%;
+window.onclick = function(event) {
+    if (!event.target.closest('.profile-circle')) {
+        const d = document.getElementById("dropdown");
+        if (d && d.classList.contains('show')) d.classList.remove('show');
     }
 }
 
-.boot-text {
-    font-family: monospace;
-    font-size: 12px;
-    color: #ff00c8;
-    margin-top: 15px;
-    letter-spacing: 3px;
-    animation: blink 0.5s infinite;
+// --- FORM LOGIC ---
+function handlePresetChange() {
+    const v = document.getElementById("presetName").value;
+    document.getElementById("customName").style.display = (v === "custom") ? "block" : "none";
 }
 
-@keyframes blink {
-    50% {
-        opacity: 0;
+function addSubscription() {
+    const preset = document.getElementById("presetName").value;
+    const name = (preset === "custom") ? document.getElementById("customName").value : preset;
+    const cost = parseFloat(document.getElementById("cost").value);
+
+    if (!name || isNaN(cost)) return alert("Fill all details! 📝");
+
+    const sub = {
+        name,
+        cost,
+        renewalDate: document.getElementById("date").value,
+        billingCycle: document.getElementById("billing").value,
+        category: document.getElementById("category").value,
+        isTrial: document.getElementById("isTrial").checked,
+        ratings: ["3"]
+    };
+
+    const data = getData();
+    data.push(sub);
+    saveData(data);
+    loadData();
+
+    document.getElementById("cost").value = "";
+}
+
+// --- MAIN LOGIC ---
+function loadData() {
+    const data = getData();
+    const list = document.getElementById("list");
+    list.innerHTML = "";
+
+    let totalM = 0, wasteful = 0, cats = {};
+    let trialCount = 0;
+
+    const today = new Date();
+
+    data.forEach((item, index) => {
+
+        // 📅 Days remaining
+        const renewal = new Date(item.renewalDate);
+        const diffDays = Math.ceil((renewal - today) / (1000 * 60 * 60 * 24));
+
+        // 💸 Ignore trial cost
+        const cost = item.isTrial ? 0 :
+            (item.billingCycle === 'yearly' ? item.cost / 12 : item.cost);
+
+        totalM += cost;
+
+        // 📊 Category data
+        cats[item.category] = (cats[item.category] || 0) + cost;
+
+        const rating = item.ratings[item.ratings.length - 1];
+        if (rating === "1") wasteful += cost;
+
+        if (item.isTrial) trialCount++;
+
+        // 🎨 Border logic
+        let borderColor = '#00ff88';
+        if (item.isTrial && diffDays <= 3) borderColor = '#ffcc00';
+        if (rating === "1") borderColor = '#ff4d4d';
+
+        // 🔔 POPUP TRIGGER (only once)
+        const key = `${item.name}-popup-${diffDays}`;
+        if (item.isTrial && (diffDays === 3 || diffDays === 1)) {
+            if (!localStorage.getItem(key)) {
+                if (diffDays === 1) {
+                    showPopup(`🚨 ${item.name} trial ends TOMORROW!`);
+                } else {
+                    showPopup(`⚠ ${item.name} trial ends in ${diffDays} days!`);
+                }
+                localStorage.setItem(key, "shown");
+            }
+        }
+
+        list.innerHTML += `
+        <div class="card" style="border-left-color: ${borderColor}">
+            
+            <div style="display:flex; justify-content:space-between">
+                <b>${item.name}</b> 
+                <span>₹${item.cost}</span>
+            </div>
+
+            ${item.isTrial ? `<p style="color:yellow; font-weight:bold;">🎁 Free Trial Active</p>` : ""}
+
+            ${item.isTrial && diffDays <= 3 ? 
+                `<p style="color:red; font-weight:bold;">⚠ Trial ending in ${diffDays} day(s)</p>` 
+                : ""}
+
+            <select onchange="rate(${index}, this.value)" 
+                style="width:100%; margin:15px 0; background:#000; color:white; border:1px solid #333; padding:10px; border-radius:5px;">
+                
+                <option value="3" ${rating == "3" ? "selected" : ""}>Essential 🚀</option>
+                <option value="1" ${rating == "1" ? "selected" : ""}>Waste 👻</option>
+            </select>
+
+            <button onclick="removeSub(${index})"
+                style="width:100%; background:#ff4d4d22; color:#ff4d4d; border:1px solid #ff4d4d; padding:10px; border-radius:8px; cursor:pointer;">
+                Cancel Registry
+            </button>
+
+            <a href="https://wa.me/?text=Split%20payment%20for%20${item.name}" 
+                target="_blank" class="wa-split">
+                WhatsApp Split
+            </a>
+        </div>`;
+    });
+
+    // 💰 Monthly burn
+    document.getElementById("totalVal").innerText = `₹${totalM.toFixed(2)}`;
+
+    // 📈 Future savings
+    const compound = wasteful * ((Math.pow(1 + 0.0066, 120) - 1) / 0.0066);
+    document.getElementById("saveVal").innerText = `₹${Math.round(compound || 0).toLocaleString()}`;
+
+    // 🧠 Smart insight
+    if (trialCount > 0) {
+        document.getElementById("smart-insight").innerText =
+            `⚠ You have ${trialCount} active free trial(s). Cancel before they charge you!`;
+    } else {
+        document.getElementById("smart-insight").innerText =
+            `"Welcome back! Your high-performance financial command center is ready."`;
     }
+
+    renderCharts(cats, data);
 }
 
-.intro-fade-out {
-    opacity: 0;
-    transform: scale(1.1);
-    pointer-events: none;
+// --- ACTIONS ---
+function removeSub(i) {
+    let d = getData();
+    d.splice(i, 1);
+    saveData(d);
+    loadData();
 }
 
-/* --- NAVBAR & USER ICON --- */
-.navbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px 40px;
-    background: rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(20px);
-    border-radius: 60px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    position: relative;
-    margin-bottom: 30px;
+function rate(i, v) {
+    let d = getData();
+    d[i].ratings.push(v);
+    saveData(d);
+    loadData();
 }
 
-.centered-logo {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    font-family: 'Orbitron', sans-serif;
-    font-size: 28px;
-    color: #00f2ff;
-    letter-spacing: 8px;
-    font-weight: 900;
-    text-shadow: 0 0 15px #00f2ff;
+// --- CHARTS ---
+function renderCharts(catData, allData) {
+    const c1 = document.getElementById("categoryChart").getContext('2d');
+    const c2 = document.getElementById("efficiencyChart").getContext('2d');
+
+    if (catChart) catChart.destroy();
+    if (effChart) effChart.destroy();
+
+    const gradient = c2.createLinearGradient(0, 0, 0, 300);
+    gradient.addColorStop(0, '#00f2ff');
+    gradient.addColorStop(1, '#0072ff');
+
+    catChart = new Chart(c1, {
+        type: 'doughnut',
+        data: {
+            labels: Object.keys(catData),
+            datasets: [{
+                data: Object.values(catData),
+                backgroundColor: ['#ff00c8', '#00f2ff', '#ffe600'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom', labels: { color: '#fff', padding: 20 } }
+            }
+        }
+    });
+
+    effChart = new Chart(c2, {
+        type: 'bar',
+        data: {
+            labels: allData.map(s => s.name),
+            datasets: [{
+                data: allData.map(s => s.ratings[s.ratings.length - 1]),
+                backgroundColor: gradient,
+                borderRadius: 8
+            }]
+        },
+        options: {
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 3,
+                    ticks: { color: '#fff', stepSize: 1 },
+                    grid: { color: 'rgba(255,255,255,0.05)' }
+                },
+                x: {
+                    ticks: { color: '#fff' },
+                    grid: { display: false },
+                    offset: true
+                }
+            },
+            plugins: { legend: { display: false } }
+        }
+    });
 }
 
-.profile-circle {
-    width: 50px;
-    height: 50px;
-    border: 2px solid #00f2ff;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    background: rgba(0, 242, 255, 0.1);
+// --- GAME (UNCHANGED) ---
+let canvas, ctx, player = { x: 30, y: 100 }, bills = [], score = 0, gameActive = false;
+
+function initGame() {
+    canvas = document.getElementById("gameCanvas");
+    if (!canvas) return;
+
+    ctx = canvas.getContext("2d");
+    canvas.width = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+
+    canvas.addEventListener("mousemove", (e) => {
+        const rect = canvas.getBoundingClientRect();
+        player.y = e.clientY - rect.top - 15;
+    });
 }
 
-.user-icon {
-    width: 26px;
-    height: 26px;
-    fill: #00f2ff;
+function startSubGame() {
+    document.getElementById("gameOverlay").style.display = "none";
+    gameActive = true;
+    bills = [];
+    score = 0;
+    gameLoop();
 }
 
-.dropdown-content {
-    display: none;
-    position: absolute;
-    right: 0;
-    top: 65px;
-    background: #1a1b23;
-    border: 1px solid #00f2ff;
-    border-radius: 15px;
-    min-width: 180px;
-    z-index: 1000;
-    overflow: hidden;
-}
+function gameLoop() {
+    if (!gameActive) return;
 
-.dropdown-content.show {
-    display: block;
-    animation: fadeIn 0.3s ease;
-}
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#ff00c8";
+    ctx.fillRect(player.x, player.y, 30, 30);
 
-.dropdown-content a {
-    color: white;
-    padding: 12px 20px;
-    text-decoration: none;
-    display: block;
-    font-weight: 600;
-}
+    if (Math.random() < 0.03)
+        bills.push({ x: canvas.width, y: Math.random() * (canvas.height - 20), s: 5 });
 
-.dropdown-content a:hover {
-    background: rgba(0, 242, 255, 0.1);
-    color: #00f2ff;
-}
+    ctx.fillStyle = "#00f2ff";
+    ctx.font = "bold 14px Arial";
 
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
+    for (let i = bills.length - 1; i >= 0; i--) {
+        let b = bills[i];
+        b.x -= b.s;
+        ctx.fillText("₹ BILL", b.x, b.y);
+
+        if (b.x < player.x + 30 && b.x + 30 > player.x &&
+            b.y > player.y && b.y < player.y + 30) {
+            gameActive = false;
+            document.getElementById("gameOverlay").style.display = "flex";
+        }
+
+        if (b.x < -50) {
+            bills.splice(i, 1);
+            score++;
+            document.getElementById("gameScore").innerText = `Score: ${score}`;
+        }
     }
 
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* --- WORKSPACE --- */
-#smart-insight {
-    background: linear-gradient(90deg, #8b5cf6, #d946ef);
-    color: white;
-    padding: 20px;
-    border-radius: 15px;
-    text-align: center;
-    font-weight: 800;
-    font-size: 20px;
-    margin-bottom: 30px;
-}
-
-.unique-registry {
-    background: rgba(0, 0, 0, 0.5);
-    padding: 40px;
-    border-radius: 25px;
-    border: 1px solid rgba(0, 242, 255, 0.3);
-    margin-bottom: 40px;
-}
-
-.registry-title {
-    font-family: 'Caveat', cursive;
-    font-size: 45px;
-    color: #00f2ff;
-    margin: 0 0 20px 0;
-}
-
-.input-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-}
-
-.field-box {
-    display: flex;
-    flex-direction: column;
-}
-
-.field-box label {
-    font-weight: 800;
-    font-size: 25px;
-    color: #00f2ff;
-    text-transform: uppercase;
-    margin-bottom: 8px;
-}
-
-.field-box input,
-.field-box select {
-    background: rgba(0, 0, 0, 0.6);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: white;
-    padding: 12px;
-    border-radius: 10px;
-    font-weight: 700;
-    outline: none;
-}
-
-.field-box input:focus {
-    border-color: #00f2ff;
-}
-
-.btn-registry-gradient {
-    grid-column: span 3;
-    background: linear-gradient(90deg, #00f2ff, #0072ff);
-    color: white;
-    border: none;
-    padding: 18px;
-    font-weight: 900;
-    font-size: 18px;
-    border-radius: 12px;
-    cursor: pointer;
-    margin-top: 10px;
-}
-
-/* --- STATS & VISUALS --- */
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-    margin-bottom: 40px;
-}
-
-.neo-box {
-    padding: 25px;
-    border-radius: 20px;
-    background: rgba(0, 0, 0, 0.3);
-    border-bottom: 5px solid #ff00c8;
-}
-
-.visuals-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1.2fr;
-    gap: 20px;
-    height: 420px;
-    margin-bottom: 40px;
-}
-
-.chart-wrapper {
-    background: rgba(0, 0, 0, 0.5);
-    padding: 20px;
-    border-radius: 25px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    display: flex;
-    flex-direction: column;
-}
-
-.canvas-box {
-    flex-grow: 1;
-    position: relative;
-    width: 100%;
-    min-height: 0;
-}
-
-.game-canvas-wrapper {
-    position: relative;
-    height: 260px;
-    background: #000;
-    border-radius: 15px;
-    overflow: hidden;
-    border: 2px solid #333;
-}
-
-#gameCanvas {
-    width: 100%;
-    height: 100%;
-}
-
-#gameOverlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.85);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 5;
-}
-
-.f-btn {
-    background: #ff00c8;
-    border: none;
-    color: white;
-    padding: 10px 20px;
-    border-radius: 5px;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-/* --- CARDS --- */
-.registry-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-    gap: 25px;
-}
-
-.card {
-    background: rgba(255, 255, 255, 0.06);
-    border-radius: 20px;
-    padding: 25px;
-    border-left: 10px solid #00ff88;
-    position: relative;
-}
-
-.wa-split {
-    display: block;
-    text-align: center;
-    background: #25D366;
-    color: white;
-    padding: 12px;
-    border-radius: 10px;
-    font-weight: 800;
-    text-decoration: none;
-    margin-top: 15px;
-}
-.popup {
-    position: fixed;
-    bottom: 30px;
-    right: 30px;
-    background: linear-gradient(135deg, #ff00c8, #ff4d4d);
-    color: white;
-    padding: 15px 20px;
-    border-radius: 12px;
-    font-weight: 700;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    opacity: 0;
-    transform: translateY(50px);
-    pointer-events: none;
-    z-index: 9999;
-}
-
-.popup.show {
-    opacity: 1;
-    transform: translateY(0);
-    pointer-events: auto;
+    requestAnimationFrame(gameLoop);
 }
