@@ -13,22 +13,25 @@
     <nav class="navbar">
         <div class="logo">✦ SubShield</div>
         <div class="nav-right">
-            <div class="profile-circle" onclick="toggleMenu()">
+            <div class="profile-circle" onclick="toggleMenu(event)">
                 <img src="https://i.pravatar.cc/150?u=student" alt="Me">
             </div>
             <div id="dropdown" class="dropdown-content">
                 <a href="#">My Journey</a>
+                <a href="#">Focus Mode</a>
                 <a href="#" onclick="localStorage.clear(); location.reload();" style="color: #ff5e5e;">Reset All Data</a>
             </div>
         </div>
     </nav>
 
     <div class="workspace">
+        <div id="smart-insight">"Welcome back! Ready to save some Vada Pav money?"</div>
+
         <div class="sticky-note-form">
             <h3>New Registry ✏️</h3>
             <div class="input-group">
                 <select id="presetName" onchange="handlePresetChange()">
-                    <option value="">Choose Service</option>
+                    <option value="">Service Name</option>
                     <option value="Netflix">Netflix</option>
                     <option value="Spotify">Spotify</option>
                     <option value="ChatGPT">ChatGPT Plus</option>
@@ -53,9 +56,7 @@
             </div>
         </div>
 
-        <div id="lifestyle-alert">
-            Calculating your Vada Pav impact...
-        </div>
+        <div id="lifestyle-alert">Calculating impact...</div>
 
         <div class="stats-grid">
             <div class="neo-box pink-glow">
@@ -63,30 +64,27 @@
                 <h2 id="totalVal">₹0.00</h2>
             </div>
             <div class="neo-box cyan-glow">
-                <p>10y Wealth Projection</p>
+                <p>Future Wealth (10y)</p>
                 <h2 id="saveVal">₹0.00</h2>
             </div>
             <div class="neo-box yellow-glow">
                 <p>Renewals</p>
+                <div class="filter-row">
+                    <button onclick="loadData(7)" class="f-btn">7d</button>
+                    <button onclick="loadData(30)" class="f-btn">30d</button>
+                </div>
                 <div id="renewals" class="renewal-scroll">Clear!</div>
             </div>
         </div>
 
         <div class="visuals-row">
-            <div class="chart-wrapper">
-                <h4>Spend Mix 🍕</h4>
-                <canvas id="categoryChart"></canvas>
-            </div>
-            <div class="chart-wrapper">
-                <h4>Usage Check 📈</h4>
-                <canvas id="efficiencyChart"></canvas>
-            </div>
+            <div class="chart-wrapper"><h4>Spend Mix 🍕</h4><canvas id="categoryChart"></canvas></div>
+            <div class="chart-wrapper"><h4>Worth it? 📈</h4><canvas id="efficiencyChart"></canvas></div>
         </div>
 
-        <h3 class="title-font">Active Registry 📁</h3>
+        <h3 class="title-font">My Registry 📁</h3>
         <div id="list" class="registry-container"></div>
     </div>
-
     <script src="script.js"></script>
 </body>
 </html>
