@@ -1,240 +1,63 @@
-/* 🔥 GOOGLE FONTS */
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Plus+Jakarta+Sans:wght@300;400;700&display=swap');
 
-/* ================= BODY ================= */
+* { box-sizing: border-box; transition: 0.3s ease; }
 body {
-  font-family: 'Poppins', sans-serif;
-  margin: 0;
-  padding: 20px;
-
-  background: 
-    linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.2)), 
-    url('pranali.jpg.jpeg');
-
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
-
-  opacity: 0;
-  transition: opacity 1s ease;
+    margin: 0; padding: 15px; font-family: 'Plus Jakarta Sans', sans-serif;
+    background: #0f0c29; background: linear-gradient(rgba(15,12,41,0.9), rgba(48,43,99,0.9)), url('pranali.jpg.jpeg');
+    background-size: cover; background-attachment: fixed; color: white;
 }
 
-body.loaded {
-  opacity: 1;
-}
+.title-font { font-family: 'Caveat', cursive; font-size: 32px; color: #ff00c8; }
 
-/* ================= INTRO ================= */
-#intro {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 999999;
-}
-
-.intro-text {
-  font-family: 'Orbitron', sans-serif;
-  font-size: 60px;
-  color: #00ffe7;
-  letter-spacing: 3px;
-
-  overflow: hidden;
-  white-space: nowrap;
-  border-right: 3px solid #00ffe7;
-
-  display: inline-block;
-  max-width: max-content;
-
-  animation: typing 2.5s steps(12) forwards,
-             blink 0.6s infinite,
-             glow 1.5s infinite alternate;
-}
-
-@keyframes typing {
-  from { width: 0 }
-  to { width: 100% }
-}
-
-@keyframes blink {
-  50% { border-color: transparent }
-}
-
-@keyframes glow {
-  from { text-shadow: 0 0 10px #00ffe7; }
-  to { text-shadow: 0 0 30px #00ffe7, 0 0 60px #00ffe7; }
-}
-
-.fade-out {
-  animation: fadeOut 1s forwards;
-}
-
-@keyframes fadeOut {
-  to {
-    opacity: 0;
-    visibility: hidden;
-  }
-}
-
-/* ================= NAVBAR ================= */
+/* Navbar */
 .navbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 25px; background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(15px); border-radius: 50px; border: 1px solid rgba(255,255,255,0.1);
+}
+.logo { font-family: 'Caveat', cursive; font-size: 28px; color: #00f2ff; }
+.profile-circle { width: 45px; height: 45px; border-radius: 50%; border: 2px solid #ff00c8; overflow: hidden; cursor: pointer; }
 
-  padding: 16px 28px;
-  border-radius: 16px;
-  backdrop-filter: blur(15px);
+/* Sticky Form */
+.sticky-note-form {
+    background: #fffbe6; color: #333; padding: 20px; border-radius: 4px;
+    box-shadow: 8px 8px 0px #00f2ff; transform: rotate(-1deg); margin-bottom: 30px;
+}
+.sticky-note-form h3 { font-family: 'Caveat', cursive; font-size: 26px; margin: 0 0 10px; }
+.input-group { display: flex; flex-wrap: wrap; gap: 8px; }
+input, select { padding: 10px; border-radius: 6px; border: 1px solid #ccc; flex: 1; min-width: 130px; }
 
-  border: 1px solid rgba(255,255,255,0.2);
-  box-shadow: 0 8px 30px rgba(0,0,0,0.3);
-    background: 
-    linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.2)), 
-    url('img2.jpeg');
+/* Lifestyle Alert */
+#lifestyle-alert {
+    background: rgba(255, 230, 0, 0.15); border: 1px dashed #ffe600;
+    padding: 15px; border-radius: 15px; text-align: center;
+    font-family: 'Caveat', cursive; font-size: 22px; color: #ffe600; margin-bottom: 20px;
 }
 
-.logo {
-  font-size: 24px;
-  font-weight: 600;
-
-  background: linear-gradient(90deg, #00ffe7, #ff7a18, #00ffe7);
-  background-size: 200%;
-
-  background-clip: text;
-  -webkit-background-clip: text;
-
-  color: transparent;
-  -webkit-text-fill-color: transparent;
-
-  animation: shine 3s linear infinite;
-}
-
-@keyframes shine {
-  to { background-position: 200% center; }
-}
-
-.profile-icon {
-  width: 45px;
-  border-radius: 50%;
-  cursor: pointer;
-  transition: 0.3s;
-}
-
-.profile-icon:hover {
-  transform: scale(1.1);
-  box-shadow: 0 0 10px #00ffe7;
-}
-
-/* ================= FORM ================= */
-.form {
-  background: rgba(255,255,255,0.1);
-  backdrop-filter: blur(12px);
-  padding: 22px;
-  border-radius: 18px;
-
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-
-  box-shadow: 0 12px 35px rgba(0,0,0,0.3);
-}
-
-/* BIG INPUTS */
-.form input,
-.form select {
-  padding: 16px 18px;
-  font-size: 16px;
-  min-width: 160px;
-
-  border-radius: 12px;
-  border: 1px solid rgba(255,255,255,0.3);
-
-  background: rgba(255,255,255,0.12);
-  color: white;
-
-  outline: none;
-  transition: all 0.3s ease;
-  
-}
-
-.form input::placeholder {
-  color: rgba(255,255,255,0.7);
-}
-
-.form input:focus,
-.form select:focus {
-  border: 1px solid #00ffe7;
-  box-shadow: 0 0 12px #00ffe7;
-  background: rgba(255,255,255,0.18);
-}
-
-/* ================= BUTTON ================= */
-button {
-  padding: 16px 28px;
-  font-size: 16px;
-  font-weight: 600;
-
-  border-radius: 12px;
-  border: none;
-
-  color: white;
-  cursor: pointer;
-
-  background: linear-gradient(135deg, #ff7a18, #ff3c00);
-  background-size: 200%;
-
-  transition: all 0.3s ease;
-}
-
-button:hover {
-  background-position: right;
-  transform: translateY(-3px) scale(1.02);
-  box-shadow: 0 10px 25px rgba(0,0,0,0.4);
-}
-
-button:active {
-  transform: scale(0.95);
-}
-
-/* ================= CARDS ================= */
+/* Registry Cards */
+.registry-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; }
 .card {
-  background: rgba(255,255,255,0.12);
-  backdrop-filter: blur(12px);
-  color: white;
-
-  padding: 15px;
-  margin: 10px 0;
-  border-radius: 12px;
-
-  transition: 0.3s;
+    background: rgba(255,255,255,0.07); border-radius: 15px; padding: 18px;
+    border: 1px solid rgba(255,255,255,0.1); position: relative;
 }
+.trial-card { border: 2px solid #ff00c8 !important; background: rgba(255,0,200,0.05) !important; }
 
-.card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+/* WhatsApp Button */
+.wa-split {
+    display: block; text-align: center; background: #25D366; color: white;
+    text-decoration: none; padding: 8px; border-radius: 8px; margin-top: 12px;
+    font-size: 13px; font-weight: 700;
 }
+.wa-split:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(37, 211, 102, 0.3); }
 
-.warning {
-  color: #ff4d4d;
-}
-
-/* ================= BOXES ================= */
-#total, #savings, #renewals {
-  background: rgba(255,255,255,0.12);
-  backdrop-filter: blur(12px);
-  color: white;
-
-  padding: 12px;
-  border-radius: 12px;
-}
-
-/* HEADINGS */
-h1, h2 {
-  color: white;
-}
+/* Standard Hackathon Styles */
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+.neo-box { padding: 20px; border-radius: 18px; background: rgba(0,0,0,0.3); backdrop-filter: blur(10px); }
+.pink-glow { border-bottom: 4px solid #ff00c8; }
+.cyan-glow { border-bottom: 4px solid #00f2ff; }
+.yellow-glow { border-bottom: 4px solid #ffe600; }
+.visuals-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 25px 0; }
+.chart-wrapper { background: rgba(0,0,0,0.4); padding: 15px; border-radius: 20px; height: 320px; }
+.dropdown-content { display: none; position: absolute; right: 20px; top: 70px; background: #111; border-radius: 10px; overflow: hidden; }
+.dropdown-content a { color: white; padding: 12px 20px; text-decoration: none; display: block; }
+#intro { position: fixed; inset: 0; background: #000; z-index: 1000; display: flex; align-items: center; justify-content: center; }
